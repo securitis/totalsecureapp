@@ -18,6 +18,9 @@ import org.t246osslab.easybuggy4sb.controller.AbstractController;
 import ognl.Ognl;
 import ognl.OgnlContext;
 import ognl.OgnlException;
+import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.Encoder;
+import org.owasp.esapi.errors.EncodingException;
 
 @Controller
 public class OGNLExpressionInjectionController extends AbstractController {
@@ -36,7 +39,9 @@ public class OGNLExpressionInjectionController extends AbstractController {
         }));
         if (!StringUtils.isBlank(expression)) {
             try {
-                Object expr = Ognl.parseExpression(expression.replaceAll("Math\\.", "@Math@"));
+                Encoder encoder = ESAPI.encoder();
+                String encodedExpression = encoder.encodeForHTML(expression.replaceAll("Math\\.", "@Math@"));
+                Object expr = Ognl.parseExpression(encodedExpression);
                 value = Ognl.getValue(expr, ctx);
             } catch (OgnlException e) {
                 if (e.getReason() != null) {
@@ -47,6 +52,8 @@ public class OGNLExpressionInjectionController extends AbstractController {
                 log.debug("Exception occurs: ", e);
             } catch (Error e) {
                 log.debug("Error occurs: ", e);
+            } catch (EncodingException e) {
+                log.debug("EncodingException occurs: ", e);
             }
         }
         if (expression != null) {
