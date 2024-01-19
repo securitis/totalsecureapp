@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.owasp.esapi.ESAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Controller;
@@ -45,11 +46,11 @@ public class CSRFController extends AbstractController {
         String password = StringUtils.trim(req.getParameter("password"));
         if (!StringUtils.isBlank(userid) && !StringUtils.isBlank(password) && password.length() >= 8) {
             try {
-				ModificationItem item = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-						new BasicAttribute("userPassword", password));
-				ldapTemplate.modifyAttributes(
-						"uid=" + encodeForLDAP(userid.trim()) + ",ou=people,dc=t246osslab,dc=org",
-						new ModificationItem[] { item });
+			ModificationItem item = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+					new BasicAttribute("userPassword", ESAPI.encoder().encodeForHTML(password)));
+                ldapTemplate.modifyAttributes(
+                        "uid=" + encodeForLDAP(userid.trim()) + ",ou=people,dc=t246osslab,dc=org",
+                        new ModificationItem[] { item });
             } catch (Exception e) {
                 log.error("Exception occurs: ", e);
                 mav.addObject("errmsg", msg.getMessage("msg.passwd.change.failed", null, locale));
