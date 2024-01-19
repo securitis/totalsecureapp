@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Date;
+import org.apache.commons.text.StringEscapeUtils;
 
 @RestController
 public class CxController {
@@ -35,9 +36,14 @@ public class CxController {
     // curl localhost:8080/legacy/runCommand/whoami
     @PostMapping("legacy/runCommand/{cmd}")
     public String runCommand(@PathVariable String cmd) throws IOException {
+        String sanitizedCmd = cmd.replaceAll("[^a-zA-Z0-9]", "");
+        if (!sanitizedCmd.equals("ping")) {
+            return "Invalid command";
+        }
         byte[] buf = new byte[1024];
-        int len = Runtime.getRuntime().exec(cmd).getInputStream().read(buf);
-        return new String(buf, 0, len);
+        int len = Runtime.getRuntime().exec(sanitizedCmd).getInputStream().read(buf);
+        String output = new String(buf, 0, len);
+        return StringEscapeUtils.escapeHtml4(output);
     }
 
     @GetMapping("legacy/add")
