@@ -35,6 +35,9 @@ public class CxController {
     // curl localhost:8080/legacy/runCommand/whoami
     @PostMapping("legacy/runCommand/{cmd}")
     public String runCommand(@PathVariable String cmd) throws IOException {
+        if (!cmd.matches("^[a-zA-Z0-9]+$")) {
+            throw new IllegalArgumentException("Invalid command");
+        }
         byte[] buf = new byte[1024];
         int len = Runtime.getRuntime().exec(cmd).getInputStream().read(buf);
         return new String(buf, 0, len);
