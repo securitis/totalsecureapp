@@ -14,8 +14,6 @@ import org.t246osslab.easybuggy4sb.controller.AbstractController;
 import org.t246osslab.easybuggy4sb.core.model.User;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,25 +55,21 @@ public class SQLInjectionReflectionController extends AbstractController {
 
 	private List<User> selectUsers(String name, String password) {
 
-		String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name='" + name
-				+ "' AND password='" + password + "'";
+        String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name=? AND password=?";
 
-		try {
-			Method queryMethod
-					= JdbcTemplate.class.getMethod("query", String.class, RowMapper.class);
+        try {
+            return jdbcTemplate.query(sql, new Object[]{name, password}, new RowMapper<User>() {
+                public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    User user = new User();
+                    user.setName(rs.getString("name"));
+                    user.setSecret(rs.getString("secret"));
+                    return user;
+                }
+            });
 
-			return (List<User>) queryMethod.invoke(jdbcTemplate, sql, new RowMapper<User>() {
-				public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-					User user = new User();
-					user.setName(rs.getString("name"));
-					user.setSecret(rs.getString("secret"));
-					return user;
-				}
-			});
-
-		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			e.printStackTrace();
-			return new ArrayList<>();
-		}
-	}
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }
