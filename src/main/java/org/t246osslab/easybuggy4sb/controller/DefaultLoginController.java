@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.owasp.esapi.ESAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -145,5 +146,59 @@ public class DefaultLoginController extends AbstractController {
             return false;
         }
         return true;
+    }
+    private boolean authUser(String userid, String password) {
+        try {
+            LdapQuery query = LdapQueryBuilder.query()
+                    .base("ou=people")
+                    .where("uid").is(userid);
+            ldapTemplate.authenticate(query, password);
+            return true;
+        } catch (AuthenticationException e) {
+            return false;
+        }
+    }
+
+    private boolean isAccountLocked(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            return false;
+        }
+        if (user.getFailedCount() >= accountLockCount
+                && (new Date().getTime() - user.getLastFailedTime().getTime()) < accountLockTime) {
+            return true;
+        }
+        return false;
+    }
+
+    private void resetAccountLock(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user != null) {
+            user.resetFailedCount();
+        }
+    }
+
+    private void incrementLoginFailedCount(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            user = new User();
+            userLoginHistory.put(userid, user);
+        }
+        user.incrementFailedCount();
+        user.setLastFailedTime(new Date());
+    }
+
+    private ModelAndView doGet(ModelAndView mav, HttpServletRequest req, HttpServletResponse res, Locale locale) {
+        Enumeration<String> attrs = req.getSession().getAttributeNames();
+        while (attrs.hasMoreElements()) {
+            String attr = attrs.nextElement();
+            if (attr.endsWith("Msg")) {
+                mav.addObject(attr, req.getSession().getAttribute(attr));
+                req.getSession().removeAttribute(attr);
+            }
+        }
+        mav.addObject("userid", req.getSession().getAttribute("userid"));
+        mav.setViewName("login");
+        return mav;
     }
 }

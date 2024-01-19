@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.owasp.esapi.ESAPI;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +30,7 @@ public class OpenRedirectController extends DefaultLoginController {
     @RequestMapping(value = Config.APP_ROOT + "/openredirect/login", method = RequestMethod.POST)
     public ModelAndView doPost(ModelAndView mav, HttpServletRequest req, HttpServletResponse res, Locale locale) throws IOException {
 
-        String userid = req.getParameter("userid");
+        String userid = ESAPI.encoder().encodeForHTML(req.getParameter("userid"));
         String password = req.getParameter("password");
         String loginQueryString = req.getParameter("loginquerystring");
         if (loginQueryString == null) {
