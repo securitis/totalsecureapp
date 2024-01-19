@@ -146,4 +146,52 @@ public class DefaultLoginController extends AbstractController {
         }
         return true;
     }
+    private boolean authUser(String userid, String password) {
+        if (StringUtils.isBlank(userid) || StringUtils.isBlank(password)) {
+            return false;
+        }
+        try {
+            LdapQuery query = LdapQueryBuilder.query()
+                    .base("ou=people")
+                    .where("uid").is(userid);
+            ldapTemplate.authenticate(query, password);
+            return true;
+        } catch (AuthenticationException e) {
+            return false;
+        }
+    }
+
+    private boolean isAccountLocked(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            return false;
+        }
+        if (user.getFailedCount() >= accountLockCount
+                && (new Date().getTime() - user.getLastFailedTime().getTime()) < accountLockTime) {
+            return true;
+        }
+        return false;
+    }
+
+    private void resetAccountLock(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user != null) {
+            user.setFailedCount(0);
+            user.setLastFailedTime(null);
+        }
+    }
+
+    private void incrementLoginFailedCount(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            user = new User();
+            user.setUserId(userid);
+            user.setFailedCount(1);
+            user.setLastFailedTime(new Date());
+            userLoginHistory.put(userid, user);
+        } else {
+            user.setFailedCount(user.getFailedCount() + 1);
+            user.setLastFailedTime(new Date());
+        }
+    }
 }
