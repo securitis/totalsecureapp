@@ -53,9 +53,9 @@ public class SQLInjectionController extends AbstractController {
 		return mav;
 	}
 
-	private List<User> selectUsers(String name, String password) {
-		String sql = "SELECT  name, secret from USERS where name='"+ name + "' or password='"+ password + "'" ;
-		return jdbcTemplate.query(sql, new RowMapper<User>() {
+    private List<User> selectUsers(String name, String password) {
+        String sql = "SELECT  name, secret from USERS where name=? or password=?";
+        return jdbcTemplate.query(sql, new Object[]{name, password}, new RowMapper<User>() {
                     public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                         User user = new User();
                         user.setName(rs.getString("name"));
