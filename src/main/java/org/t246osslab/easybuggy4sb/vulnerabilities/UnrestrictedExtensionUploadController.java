@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -57,6 +58,7 @@ public class UnrestrictedExtensionUploadController extends AbstractController {
         if (StringUtils.isBlank(fileName)) {
             return doGet(mav, req, locale);
         }
+        fileName = StringEscapeUtils.escapeHtml4(fileName);
         boolean isConverted = MultiPartFileUtils.writeFile(savePath, file, fileName);
 
         if (!isConverted) {
