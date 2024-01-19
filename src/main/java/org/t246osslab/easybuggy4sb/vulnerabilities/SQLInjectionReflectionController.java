@@ -16,11 +16,13 @@ import org.t246osslab.easybuggy4sb.core.model.User;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.owasp.encoder.Encode;
 
 @Controller
 public class SQLInjectionReflectionController extends AbstractController {
@@ -57,25 +59,24 @@ public class SQLInjectionReflectionController extends AbstractController {
 
 	private List<User> selectUsers(String name, String password) {
 
-		String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name='" + name
-				+ "' AND password='" + password + "'";
+        String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name=? AND password=?";
 
-		try {
-			Method queryMethod
-					= JdbcTemplate.class.getMethod("query", String.class, RowMapper.class);
-
-			return (List<User>) queryMethod.invoke(jdbcTemplate, sql, new RowMapper<User>() {
-				public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-					User user = new User();
-					user.setName(rs.getString("name"));
-					user.setSecret(rs.getString("secret"));
-					return user;
-				}
-			});
-
-		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			e.printStackTrace();
-			return new ArrayList<>();
-		}
-	}
+        try {
+            PreparedStatement preparedStatement = jdbcTemplate.getDataSource().getConnection().prepareStatement(sql);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, password);
+            ResultSet rs = preparedStatement.executeQuery();
+            List<User> users = new ArrayList<>();
+            while (rs.next()) {
+                User user = new User();
+                user.setName(rs.getString("name"));
+                user.setSecret(rs.getString("secret"));
+                users.add(user);
+            }
+            return users;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }

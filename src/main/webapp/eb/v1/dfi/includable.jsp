@@ -1,3 +1,4 @@
+<%@ page import="org.springframework.web.util.HtmlUtils" %>
 <%@ page pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
@@ -12,7 +13,7 @@
     <link rel="icon" type="image/vnd.microsoft.icon" href="${pageContext.request.contextPath}/images/favicon.ico">
     <c:catch var="ex">
         <c:if test="${param.template != null && !fn:contains(param.template,'../') && !fn:startsWith(param.template,'/')}">
-            <c:import url="<%=request.getParameter(\"template\")%>" />
+            <c:import url="<%=HtmlUtils.htmlEscape(HtmlUtils.htmlUnescape(request.getParameter(\"template\")))%>" />
         </c:if>
     </c:catch>
 </head>
