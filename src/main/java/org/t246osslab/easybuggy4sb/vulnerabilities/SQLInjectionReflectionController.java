@@ -57,8 +57,7 @@ public class SQLInjectionReflectionController extends AbstractController {
 
 	private List<User> selectUsers(String name, String password) {
 
-		String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name='" + name
-				+ "' AND password='" + password + "'";
+        String sql = "SELECT name, secret FROM users WHERE ispublic = 'true' AND name='" + HtmlUtils.htmlEscape(name) + "' AND password='" + HtmlUtils.htmlEscape(password) + "'";
 
 		try {
 			Method queryMethod

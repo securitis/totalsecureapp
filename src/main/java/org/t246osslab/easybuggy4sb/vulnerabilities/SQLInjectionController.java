@@ -1,5 +1,6 @@
 package org.t246osslab.easybuggy4sb.vulnerabilities;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -53,15 +54,20 @@ public class SQLInjectionController extends AbstractController {
 		return mav;
 	}
 
-	private List<User> selectUsers(String name, String password) {
-		String sql = "SELECT  name, secret from USERS where name='"+ name + "' or password='"+ password + "'" ;
-		return jdbcTemplate.query(sql, new RowMapper<User>() {
-                    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        User user = new User();
-                        user.setName(rs.getString("name"));
-                        user.setSecret(rs.getString("secret"));
-                        return user;
-                    }
-				});
-	}
+    private List<User> selectUsers(String name, String password) {
+        String sql = "SELECT  name, secret from USERS where name=? or password=?";
+        return jdbcTemplate.query(sql, new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, name);
+                preparedStatement.setString(2, password);
+            }
+        }, new RowMapper<User>() {
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User();
+                user.setName(rs.getString("name"));
+                user.setSecret(rs.getString("secret"));
+                return user;
+            }
+        });
+    }
 }
