@@ -36,7 +36,8 @@ public class OGNLExpressionInjectionController extends AbstractController {
         }));
         if (!StringUtils.isBlank(expression)) {
             try {
-                Object expr = Ognl.parseExpression(expression.replaceAll("Math\\.", "@Math@"));
+                String sanitizedExpression = expression.replaceAll("[^a-zA-Z0-9]", ""); /*n0*/
+                Object expr = Ognl.parseExpression(sanitizedExpression.replaceAll("Math\\.", "@Math@")); /*n1*/
                 value = Ognl.getValue(expr, ctx);
             } catch (OgnlException e) {
                 if (e.getReason() != null) {
