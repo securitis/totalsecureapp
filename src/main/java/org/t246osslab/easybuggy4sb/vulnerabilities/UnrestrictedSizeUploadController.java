@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,6 +57,7 @@ public class UnrestrictedSizeUploadController extends AbstractController {
             mav.addObject("errmsg", msg.getMessage("msg.not.image.file", null, locale));
             return doGet(mav, locale);
         }
+        fileName = StringEscapeUtils.escapeHtml4(fileName);
         boolean isConverted = MultiPartFileUtils.writeFile(savePath, file, fileName);
 
         if (!isConverted) {
