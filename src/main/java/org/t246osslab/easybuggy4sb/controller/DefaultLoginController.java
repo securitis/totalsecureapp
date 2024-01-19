@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.owasp.esapi.ESAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -90,9 +91,57 @@ public class DefaultLoginController extends AbstractController {
         } else {
             session.setAttribute("authNMsg", msg.getMessage("msg.authentication.fail", null, locale));
         }
-		/* account lock count +1 */
-	    incrementLoginFailedCount(userid);
-		return doGet(mav, req, res, locale);
+        /* account lock count +1 */
+        incrementLoginFailedCount(userid);
+        return doGet(mav, req, res, locale);
+    }
+
+    private boolean authUser(String userid, String password) {
+        try {
+            LdapQuery query = LdapQueryBuilder.query()
+                    .base("ou=people")
+                    .where("uid").is(userid);
+            return ldapTemplate.authenticate(query, password);
+        } catch (EmptyResultDataAccessException | AuthenticationException e) {
+            return false;
+        }
+    }
+
+    private boolean isAccountLocked(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            return false;
+        }
+        if (user.getFailedCount() >= accountLockCount) {
+            if (new Date().getTime() - user.getLastFailedTime().getTime() < accountLockTime) {
+                return true;
+            } else {
+                resetAccountLock(userid);
+            }
+        }
+        return false;
+    }
+
+    private void resetAccountLock(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user != null) {
+            user.setFailedCount(0);
+            user.setLastFailedTime(null);
+        }
+    }
+
+    private void incrementLoginFailedCount(String userid) {
+        User user = userLoginHistory.get(userid);
+        if (user == null) {
+            user = new User();
+            user.setUserId(userid);
+            user.setFailedCount(1);
+            user.setLastFailedTime(new Date());
+            userLoginHistory.put(userid, user);
+        } else {
+            user.setFailedCount(user.getFailedCount() + 1);
+            user.setLastFailedTime(new Date());
+        }
     }
 
     protected void incrementLoginFailedCount(String userid) {
