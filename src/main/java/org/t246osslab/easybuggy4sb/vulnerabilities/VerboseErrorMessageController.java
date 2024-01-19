@@ -17,6 +17,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.t246osslab.easybuggy4sb.Config;
 import org.t246osslab.easybuggy4sb.controller.DefaultLoginController;
 import org.t246osslab.easybuggy4sb.core.model.User;
+import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.errors.EncodingException;
 
 @Controller
 public class VerboseErrorMessageController extends DefaultLoginController {
@@ -34,7 +36,7 @@ public class VerboseErrorMessageController extends DefaultLoginController {
 	public ModelAndView doPost(ModelAndView mav, HttpServletRequest req, HttpServletResponse res, Locale locale)
 			throws IOException {
 
-		String userid = req.getParameter("userid");
+		String userid = ESAPI.encoder().encodeForHTML(req.getParameter("userid"));
 		String password = req.getParameter("password");
 
 		HttpSession session = req.getSession(true);

@@ -57,7 +57,7 @@ public class ClickJackingController extends AbstractController {
 				ldapTemplate.modifyAttributes(
 						"uid=" + encodeForLDAP(userid.trim()) + ",ou=people,dc=t246osslab,dc=org",
 						new ModificationItem[] { item });
-				mav.addObject("mail", mail);
+				mav.addObject("mail", org.apache.commons.lang.StringEscapeUtils.escapeHtml(mail));
 
 			} catch (Exception e) {
 				log.error("Exception occurs: ", e);

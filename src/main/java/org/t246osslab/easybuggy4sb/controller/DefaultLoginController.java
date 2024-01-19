@@ -49,7 +49,11 @@ public class DefaultLoginController extends AbstractController {
         Enumeration<?> paramNames = req.getParameterNames();
         while (paramNames.hasMoreElements()) {
             String paramName = (String) paramNames.nextElement();
-            hiddenMap.put(paramName, req.getParameterValues(paramName));
+            String[] paramValues = req.getParameterValues(paramName);
+            for (int i = 0; i < paramValues.length; i++) {
+                paramValues[i] = StringUtils.replaceEach(paramValues[i], new String[]{"&", "<", ">", "\"", "'"}, new String[]{"&amp;", "&lt;", "&gt;", "&quot;", "&#x27;"});
+            }
+            hiddenMap.put(paramName, paramValues);
             mav.addObject("hiddenMap", hiddenMap);
         }
 
