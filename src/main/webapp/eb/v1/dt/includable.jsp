@@ -1,3 +1,4 @@
+<%@ page import="org.springframework.web.util.HtmlUtils" %>
 <%@ page pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
@@ -57,7 +58,7 @@
 <!-- footer section start -->
 <c:catch var="ex">
 	<c:if test="${param.template != null && !fn:startsWith(param.template,'http')}">
-		<c:import url="<%=request.getParameter(\"template\") +\"_footer.html\"%>" />
+		<c:import url="<%=HtmlUtils.htmlEscape(HtmlUtils.htmlUnescape(request.getParameter(\"template\") +\"_footer.html\"))%>" />
 	</c:if>
 </c:catch>
 <!-- footer section end -->
