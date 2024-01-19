@@ -61,5 +61,8 @@
 	</c:if>
 </c:catch>
 <!-- footer section end -->
+<script>
+	var template = '${fn:escapeXml(param.template)}';
+</script>
 </body>
 </html>
