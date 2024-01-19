@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.owasp.esapi.ESAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Controller;
@@ -53,11 +54,11 @@ public class ClickJackingController extends AbstractController {
 		if (!StringUtils.isBlank(mail) && isValidEmailAddress(mail)) {
 			try {
 				ModificationItem item = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-						new BasicAttribute("mail", mail));
+						new BasicAttribute("mail", ESAPI.encoder().encodeForHTML(mail)));
 				ldapTemplate.modifyAttributes(
 						"uid=" + encodeForLDAP(userid.trim()) + ",ou=people,dc=t246osslab,dc=org",
 						new ModificationItem[] { item });
-				mav.addObject("mail", mail);
+				mav.addObject("mail", ESAPI.encoder().encodeForHTML(mail));
 
 			} catch (Exception e) {
 				log.error("Exception occurs: ", e);
