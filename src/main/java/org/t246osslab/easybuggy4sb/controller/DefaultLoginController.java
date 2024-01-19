@@ -55,8 +55,8 @@ public class DefaultLoginController extends AbstractController {
 
         HttpSession session = req.getSession(true);
         String authNMsg = (String) session.getAttribute("authNMsg");
-		if (authNMsg != null && !"authenticated".equals(authNMsg)) {
-            mav.addObject("errmsg", authNMsg);
+        if (authNMsg != null && !"authenticated".equals(authNMsg)) {
+            mav.addObject("errmsg", org.apache.commons.lang.StringEscapeUtils.escapeHtml(authNMsg));
             session.setAttribute("authNMsg", null);
         }
         return mav;
