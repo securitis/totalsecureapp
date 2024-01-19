@@ -6,6 +6,8 @@ import ognl.OgnlContext;
 import ognl.OgnlException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.errors.EncodingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,7 +43,7 @@ public class OGNLExpressionInjectionReflectionController extends AbstractControl
                 Method parseExpressionMethod
                         = Ognl.class.getMethod("parseExpression", String.class);
 
-                Object expr = parseExpressionMethod.invoke(Ognl.class, expression.replaceAll("Math\\.", "@Math@"));
+                Object expr = parseExpressionMethod.invoke(Ognl.class, ESAPI.encoder().encodeForHTML(expression.replaceAll("Math\\.", "@Math@")));
                 result = getValueMethod.invoke(Ognl.class, expr, ctx);
             } catch (Exception e) {
                 if (e.getCause() instanceof OgnlException && ((OgnlException)e.getCause()).getReason() != null) {
