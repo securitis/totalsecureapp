@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.HtmlUtils;
 import org.t246osslab.easybuggy4sb.Config;
 import org.t246osslab.easybuggy4sb.controller.AbstractController;
 
@@ -22,12 +23,12 @@ public class CSSInjectionController extends AbstractController {
             Locale locale) {
         setViewAndCommonObjects(mav, locale, "cssinjection");
         Resource resource = new ClassPathResource("/css/cssinjection.css");
-		try {
-			mav.addObject("cssinjection_css", IOUtils.toString(resource.getInputStream()));
-		} catch (IOException e) {
-		}
-		mav.addObject("nonce", UUID.randomUUID().toString());
-		mav.addObject("style", style);
+	try {
+		mav.addObject("cssinjection_css", IOUtils.toString(resource.getInputStream()));
+	} catch (IOException e) {
+	}
+	mav.addObject("nonce", UUID.randomUUID().toString());
+	mav.addObject("style", HtmlUtils.htmlEscape(style));
         return mav;
     }
 }
