@@ -2,7 +2,6 @@ package org.t246osslab.easybuggy4sb.vulnerabilities;
 
 import java.util.Locale;
 
-import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
@@ -37,8 +36,9 @@ public class CodeInjectionController extends AbstractController {
         try {
             /* Parse the input string as JSON */
         	ScriptEngineManager manager = new ScriptEngineManager();
-        	ScriptEngine scriptEngine = manager.getEngineByName("JavaScript");
-        	scriptEngine.eval("JSON.parse('" + convertedJsonString + "')");
+        	manager.registerEngineName("js", new NashornScriptEngineFactory());
+        	ScriptEngine scriptEngine = manager.getEngineByName("js");
+        	scriptEngine.eval("var obj = " + convertedJsonString + ";");
         	mav.addObject("msg", msg.getMessage("msg.valid.json", null, locale));
         } catch (ScriptException e) {
         	mav.addObject("errmsg", msg.getMessage("msg.invalid.json",
